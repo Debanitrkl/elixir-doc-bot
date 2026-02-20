@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+}
+
+model Doctor {
+  id              String    @id @default(cuid())
+  wpUserId        Int
+  wpSiteUrl       String
+  name            String
+  email           String
+  apiKeyHash      String    @unique
+  whatsappPhoneId String?   @unique
+  whatsappToken   String?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  settings      DoctorSettings?
+  patients      Patient[]
+  conversations Conversation[]
+  auditLogs     AuditLog[]
+
+  @@index([wpUserId, wpSiteUrl])
+}
+
+model DoctorSettings {
+  id                String   @id @default(cuid())
+  doctorId          String   @unique
+  specialization    String   @default("")
+  qualifications    String   @default("")
+  systemPrompt      String   @default("")
+  greetingMessage   String   @default("Hello! I am a medical AI assistant. How can I help you today?")
+  workingHoursStart String   @default("09:00")
+  workingHoursEnd   String   @default("21:00")
+  workingHoursTimezone String @default("Asia/Kolkata")
+  enableVoiceReply  Boolean  @default(true)
+  enableAutoReply   Boolean  @default(true)
+  gptModel          String   @default("gpt-4o")
+  defaultLanguage   String   @default("en")
+  offHoursMessage   String   @default("The doctor is currently unavailable. Please leave your message and we will get back to you.")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+}
+
+model Patient {
+  id            String    @id @default(cuid())
+  doctorId      String
+  phone         String
+  phoneEncrypted String?
+  name          String    @default("Unknown")
+  language      String    @default("en")
+  metadata      Json?
+  isBlocked     Boolean   @default(false)
+  firstContactAt DateTime @default(now())
+  lastContactAt  DateTime @default(now())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  doctor        Doctor         @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  conversations Conversation[]
+
+  @@unique([doctorId, phone])
+  @@index([doctorId])
+}
+
+enum ConversationStatus {
+  ACTIVE
+  WAITING_DOCTOR
+  CLOSED
+  ARCHIVED
+}
+
+model Conversation {
+  id        String             @id @default(cuid())
+  doctorId  String
+  patientId String
+  status    ConversationStatus @default(ACTIVE)
+  subject   String?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  doctor   Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient  Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@index([doctorId])
+  @@index([patientId])
+  @@index([doctorId, status])
+}
+
+enum MessageRole {
+  PATIENT
+  DOCTOR
+  AI
+  SYSTEM
+}
+
+enum MessageType {
+  TEXT
+  VOICE
+  IMAGE
+}
+
+model Message {
+  id              String      @id @default(cuid())
+  conversationId  String
+  role            MessageRole
+  type            MessageType @default(TEXT)
+  contentOriginal String
+  contentEnglish  String
+  languageCode    String      @default("en")
+  audioUrl        String?
+  whatsappMsgId   String?     @unique
+  tokensUsed      Int         @default(0)
+  isRead          Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([conversationId, createdAt])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  doctorId  String
+  action    String
+  resource  String
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@index([doctorId])
+  @@index([doctorId, createdAt])
+}
+
+model RateLimit {
+  id        String   @id
+  count     Int      @default(0)
+  windowStart DateTime @default(now())
+
+  @@index([id, windowStart])
+}
