@@ -65,16 +65,17 @@ Supports all **22 scheduled Indian languages** via [Bhashini](https://bhashini.g
 
 ### One-Click Deploy
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FDebanitrkl%2Felixir-doc-bot&root-directory=packages/backend&env=POSTGRES_PRISMA_URL,OPENAI_API_KEY,BHASHINI_USER_ID,BHASHINI_API_KEY,WHATSAPP_APP_SECRET,ENCRYPTION_SECRET,DOCBOT_MASTER_SECRET&envDescription=API%20keys%20needed%20for%20DocBot&envLink=https%3A%2F%2Fgithub.com%2FDebanitrkl%2Felixir-doc-bot%23environment-variables&project-name=elixir-doc-bot)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FDebanitrkl%2Felixir-doc-bot&env=POSTGRES_PRISMA_URL,OPENAI_API_KEY,BHASHINI_USER_ID,BHASHINI_API_KEY,WHATSAPP_APP_SECRET,ENCRYPTION_SECRET,DOCBOT_MASTER_SECRET&envDescription=API%20keys%20needed%20for%20DocBot&envLink=https%3A%2F%2Fgithub.com%2FDebanitrkl%2Felixir-doc-bot%23environment-variables&project-name=elixir-doc-bot)
+
+> The repo includes a `vercel.json` that configures the build command and output directory automatically — no manual Root Directory setting needed.
 
 ### Manual Deploy
 
 1. Fork/clone this repo
 2. In Vercel Dashboard → New Project → Import this repo
-3. Set **Root Directory** to `packages/backend`
-4. Framework Preset: **Next.js**
-5. Add all environment variables (see below)
-6. Deploy
+3. Framework Preset will be auto-detected as **Next.js**
+4. Add all environment variables (see below)
+5. Deploy
 
 ### Environment Variables
 
